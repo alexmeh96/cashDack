@@ -52,11 +52,14 @@ public class AuthController {
         this.cookieUtil = cookieUtil;
     }
 
+
     @PostMapping("/signin")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginUser loginUser) {
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginUser.getUsername(), loginUser.getPassword()));
+                new UsernamePasswordAuthenticationToken(loginUser.getEmail(), loginUser.getPassword()));
+
+
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
