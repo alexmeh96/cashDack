@@ -53,7 +53,7 @@ export default {
     ... mapActions(["logoutAct"]),
     logout() {
       this.logoutAct();
-      this.$router.push('/login');
+      this.$router.push('/login?message=logout');
     }
   },
   mounted() {

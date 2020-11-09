@@ -12,12 +12,12 @@
         >
         <label for="email">Email</label>
         <small
-          class="helper-text invalid"
-          v-if="$v.email.$dirty && !$v.email.required"
+            class="helper-text invalid"
+            v-if="$v.email.$dirty && !$v.email.required"
         >Поле Email не должно быть пустым</small>
         <small
-          class="helper-text invalid"
-          v-else-if="$v.email.$dirty && !$v.email.email"
+            class="helper-text invalid"
+            v-else-if="$v.email.$dirty && !$v.email.email"
         >Введите корретный Email</small>
       </div>
       <div class="input-field">
@@ -29,16 +29,16 @@
         >
         <label for="password">Пароль</label>
         <small
-          class="helper-text invalid"
-          v-if="$v.password.$dirty && !$v.password.required"
+            class="helper-text invalid"
+            v-if="$v.password.$dirty && !$v.password.required"
         >
           Введите пароль
         </small>
         <small
-          class="helper-text invalid"
-          v-else-if="$v.password.$dirty && !$v.password.minLength"
+            class="helper-text invalid"
+            v-else-if="$v.password.$dirty && !$v.password.minLength"
         >
-          Пароль должен быть {{$v.password.$params.minLength.min}} символов. Сейчас он {{password.length}}
+          Пароль должен быть {{ $v.password.$params.minLength.min }} символов. Сейчас он {{ password.length }}
         </small>
       </div>
     </div>
@@ -52,7 +52,7 @@
           <i class="material-icons right">send</i>
         </button>
         <div>
-          <div v-if="message" class="alert alert-danger" role="alert">{{message}}</div>
+          <div v-if="messageError" class="alert alert-danger" role="alert">{{ messageError }}</div>
         </div>
       </div>
 
@@ -67,20 +67,16 @@
 <script>
 import {email, required, minLength} from 'vuelidate/lib/validators'
 import messages from '@/utils/messages'
-import User from '@/model/user';
-import { mapActions, mapGetters } from 'vuex'
+import {mapActions, mapGetters} from 'vuex'
 
 export default {
   name: 'login',
-  data() {
-    return {
-      email: '',
-      password: '',
-      loading: false,
-      message: ''
-    };
-  },
-  computed: mapGetters(["getLoggedIn"]),
+  data: () => ({
+    email: '',
+    password: '',
+    messageError: ''
+  }),
+  computed: mapGetters(["getLoggedIn", "getError"]),
   created() {
     if (this.getLoggedIn) {
       this.$router.push('/profile');
@@ -96,8 +92,8 @@ export default {
     }
   },
   methods: {
-    ... mapActions(["loginAct"]),
-    submitHandler() {
+    ...mapActions(["loginAct"]),
+    async submitHandler() {
       this.loading = true;
       if (this.$v.$invalid) {
         this.$v.$touch()
@@ -105,23 +101,22 @@ export default {
         return
       }
 
-      if (this.email && this.password) {
-        const user = new User('', this.email, this.password)
-        this.loginAct(user).then(
-            () => {
-              this.$router.push('/profile');
-            },
-            error => {
-              this.loading = false;
-              console.log( (error.response && error.response.data) ||
-                  error.message ||
-                  error.toString())
-              this.message = "no correct email or password"
+      const formData = {
+        email: this.email,
+        password: this.password
 
-            }
-        );
       }
+
+      try {
+        await this.loginAct(formData)
+        this.$router.push('/profile')
+
+      } catch (e) {
+        this.messageError = messages[this.getError]
+      }
+
     }
+
   }
 }
 </script>

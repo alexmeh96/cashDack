@@ -10,55 +10,55 @@ export default new Router({
     {
       path: '/login',
       name: 'login',
-      meta: {layout: 'empty'},
+      meta: {layout: 'Empty'},
       component: () => import('./views/Login.vue')
     },
     {
       path: '/register',
       name: 'register',
-      meta: {layout: 'empty'},
+      meta: {layout: 'Empty'},
       component: () => import('./views/Register.vue')
     },
     {
       path: '/',
       name: 'home',
-      meta: {layout: 'main'},
+      meta: {layout: 'Main'},
       component: () => import('./views/Home.vue')
     },
     {
       path: '/categories',
       name: 'categories',
-      meta: {layout: 'main'},
+      meta: {layout: 'Main'},
       component: () => import('./views/Categories.vue')
     },
     {
       path: '/detail/:id',
       name: 'detail',
-      meta: {layout: 'main'},
+      meta: {layout: 'Main'},
       component: () => import('./views/Detail.vue')
     },
     {
       path: '/history',
       name: 'history',
-      meta: {layout: 'main'},
+      meta: {layout: 'Main'},
       component: () => import('./views/History.vue')
     },
     {
       path: '/planning',
       name: 'planning',
-      meta: {layout: 'main'},
+      meta: {layout: 'Main'},
       component: () => import('./views/Planning.vue')
     },
     {
       path: '/profile',
       name: 'profile',
-      meta: {layout: 'main'},
+      meta: {layout: 'Main'},
       component: () => import('./views/Profile.vue')
     },
     {
       path: '/record',
       name: 'record',
-      meta: {layout: 'main'},
+      meta: {layout: 'Main'},
       component: () => import('./views/Record.vue')
     }
   ]

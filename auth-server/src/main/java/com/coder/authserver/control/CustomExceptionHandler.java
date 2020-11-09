@@ -2,6 +2,7 @@ package com.coder.authserver.control;
 
 import com.coder.authserver.payload.ApiError;
 import com.coder.authserver.payload.RegisterResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,9 +29,16 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 //    }
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<?> handle(final BadCredentialsException exception) {
-        System.out.println("ошибка");
         return ResponseEntity
                 .badRequest()
                 .body(new ApiError(HttpStatus.BAD_REQUEST, "Error: No correct email or password!", exception));
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<?> handle2(final ExpiredJwtException exception) {
+        System.out.println("exception!");
+        return ResponseEntity
+                .badRequest()
+                .body(new ApiError(HttpStatus.BAD_REQUEST, "Error: JWT token is expired!", exception));
     }
 }

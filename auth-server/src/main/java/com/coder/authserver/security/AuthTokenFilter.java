@@ -29,7 +29,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Autowired
     public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService) {
-        this.jwtUtils = jwtUtils;   
+        this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
     }
 
@@ -59,7 +59,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.error("Cannot set user authentication: {}", e);
         }
 
