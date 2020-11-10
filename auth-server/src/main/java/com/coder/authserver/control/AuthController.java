@@ -1,12 +1,10 @@
 package com.coder.authserver.control;
 
+import com.coder.authserver.dto.Token;
 import com.coder.authserver.model.ERole;
 import com.coder.authserver.model.Role;
 import com.coder.authserver.model.User;
-import com.coder.authserver.payload.JwtResponse;
-import com.coder.authserver.payload.LoginUser;
-import com.coder.authserver.payload.RegisterResponse;
-import com.coder.authserver.payload.RegisterUser;
+import com.coder.authserver.payload.*;
 import com.coder.authserver.repo.RoleRepository;
 import com.coder.authserver.repo.UserRepository;
 import com.coder.authserver.security.JwtUtils;
@@ -59,26 +57,27 @@ public class AuthController {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginUser.getEmail(), loginUser.getPassword()));
 
-
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
-
-        String refreshToken = jwtUtils.generateRefreshToken();
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(HttpHeaders.SET_COOKIE,  cookieUtil.createRefreshTokenCookie(refreshToken).toString());
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        Token accessToken = jwtUtils.generateAccessToken(userDetails.getEmail());
+        Token refreshToken = jwtUtils.generateRefreshToken(userDetails.getEmail());
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.createTokenCookie(refreshToken).toString());
+
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok().headers(httpHeaders).body(new JwtResponse(jwt,
+        return ResponseEntity.ok().headers(responseHeaders).body(new LoginResponse(
+                accessToken,
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
-                roles));
+                roles)
+        );
     }
 
     @PostMapping("/signup")
@@ -136,5 +135,18 @@ public class AuthController {
         return ResponseEntity.ok(new RegisterResponse("User registered successfully!"));
     }
 
+    @GetMapping(value = "/refresh")
+    public ResponseEntity<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+
+        String currentUserEmail = jwtUtils.getUserNameFromRefreshToken(refreshToken);
+
+        Token newAccessToken = jwtUtils.generateAccessToken(currentUserEmail);
+        Token newRefreshToken = jwtUtils.generateRefreshToken(currentUserEmail);
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.createTokenCookie(newRefreshToken).toString());
+
+        return ResponseEntity.ok().headers(responseHeaders).body(newAccessToken);
+    }
 
 }

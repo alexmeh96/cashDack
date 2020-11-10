@@ -33,41 +33,52 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    public AuthTokenFilter() {}
+    public AuthTokenFilter() {
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+
         try {
-            String jwt = parseJwt(httpServletRequest);
-//            String jwt = null;
-//            if (httpServletRequest.getCookies()!= null) {
-//                jwt = httpServletRequest.getCookies()[httpServletRequest.getCookies().length - 1].getValue();
-//                System.out.println(jwt);
-//            }
 
-       //     System.out.println(jwt);
+            if (httpServletRequest.getRequestURI().equals("/auth/refresh")) {
+                String refreshToken = jwtUtils.getRefreshTokenFromCookie(httpServletRequest);
 
-           // Arrays.stream(httpServletRequest.getCookies()).forEach(cookie -> System.out.println(cookie.getValue()));
+                if (refreshToken != null && jwtUtils.validateRefreshToken(refreshToken)) {
+                    String email = jwtUtils.getUserNameFromRefreshToken(refreshToken);
 
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-                String username = jwtUtils.getUserNameFromJwtToken(jwt);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+
+                String accessToken = parseAccessToken(httpServletRequest);
+
+                if (accessToken != null && jwtUtils.validateAccessToken(accessToken)) {
+                    String email = jwtUtils.getUserNameFromAccessToken(accessToken);
+
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Cannot set user authentication: {}", e);
         }
 
         filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 
-    private String parseJwt(HttpServletRequest request) {
+    private String parseAccessToken(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
 
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {

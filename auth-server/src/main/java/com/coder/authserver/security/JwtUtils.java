@@ -1,5 +1,6 @@
 package com.coder.authserver.security;
 
+import com.coder.authserver.dto.Token;
 import com.coder.authserver.service.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
@@ -8,6 +9,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Random;
 
@@ -15,52 +20,73 @@ import java.util.Random;
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    @Value("${bezkoder.app.jwtSecret}")
-    private String tokenAccessSecret;
+    @Value("${accessTokenSecret}")
+    private String accessTokenSecret;
 
-    @Value("${bezkoder.app.jwtExpirationMs}")
-    private int tokenAccessExpiration;
+    @Value("${refreshTokenSecret}")
+    private String refreshTokenSecret;
 
-    @Value("${bezkoder.app.jwtSecret}")
-    private String tokenRefreshSecret;
+    @Value("${tokenExpirationMsec}")
+    private Long tokenExpirationMsec;
 
-    @Value("${bezkoder.app.jwtExpirationMs}")
-    private int tokenRefreshExpiration;
+    @Value("${refreshTokenExpirationMsec}")
+    private Long refreshTokenExpirationMsec;
 
-    public String generateJwtToken(Authentication authentication) {
+    @Value("${accessTokenName}")
+    private String accessTokenName;
 
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+    @Value("${refreshTokenName}")
+    private String refreshTokenName;
 
-
-
-        return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + tokenAccessExpiration))
-                .signWith(SignatureAlgorithm.HS512, tokenAccessSecret)
+    public Token generateAccessToken(String subject) {
+        Date now = new Date();
+        Long duration = now.getTime() + tokenExpirationMsec;
+        Date expiryDate = new Date(duration);
+        String token = Jwts.builder()
+                .setSubject(subject)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS512, accessTokenSecret)
                 .compact();
+        return new Token(accessTokenName, token, duration, LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()));
     }
 
-    public String generateRefreshToken() {
-        char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
-        StringBuilder sb = new StringBuilder(20);
-        Random random = new Random();
-        for (int i = 0; i < 20; i++) {
-            char c = chars[random.nextInt(chars.length)];
-            sb.append(c);
-        }
-        return sb.toString();
+    public Token generateRefreshToken(String subject) {
+        Date now = new Date();
+        Long duration = now.getTime() + refreshTokenExpirationMsec;
+        Date expiryDate = new Date(duration);
+        String token = Jwts.builder()
+                .setSubject(subject)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS512, refreshTokenSecret)
+                .compact();
+        return new Token(refreshTokenName, token, duration, LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()));
     }
 
 
+//    public String generateRefreshToken() {
+//        char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+//        StringBuilder sb = new StringBuilder(20);
+//        Random random = new Random();
+//        for (int i = 0; i < 20; i++) {
+//            char c = chars[random.nextInt(chars.length)];
+//            sb.append(c);
+//        }
+//        return sb.toString();
+//
 
-    public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(tokenAccessSecret).parseClaimsJws(token).getBody().getSubject();
+    public String getUserNameFromAccessToken(String token) {
+        return Jwts.parser().setSigningKey(accessTokenSecret).parseClaimsJws(token).getBody().getSubject();
     }
 
-    public boolean validateJwtToken(String authToken) throws ExpiredJwtException {
+    public String getUserNameFromRefreshToken(String token) {
+        return Jwts.parser().setSigningKey(refreshTokenSecret).parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public boolean validateAccessToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(tokenAccessSecret).parseClaimsJws(authToken);
+            Jwts.parser().setSigningKey(accessTokenSecret).parseClaimsJws(authToken);
             return true;
         } catch (SignatureException e) {
             logger.error("Invalid JWT signature: {}", e.getMessage());
@@ -68,7 +94,7 @@ public class JwtUtils {
             logger.error("Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
             logger.error("JWT token is expired: {}", e.getMessage());
-            throw e;
+
         } catch (UnsupportedJwtException e) {
             logger.error("JWT token is unsupported: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
@@ -76,5 +102,38 @@ public class JwtUtils {
         }
 
         return false;
+    }
+
+    public boolean validateRefreshToken(String authToken) {
+        try {
+            Jwts.parser().setSigningKey(refreshTokenSecret).parseClaimsJws(authToken);
+            return true;
+        } catch (SignatureException e) {
+            logger.error("Invalid JWT signature: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            logger.error("Invalid JWT token: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            logger.error("JWT token is expired: {}", e.getMessage());
+
+        } catch (UnsupportedJwtException e) {
+            logger.error("JWT token is unsupported: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("JWT claims string is empty: {}", e.getMessage());
+        }
+
+        return false;
+    }
+
+    public String getRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies) {
+            if (refreshTokenName.equals(cookie.getName())) {
+                String refreshToken = cookie.getValue();
+                if (refreshToken == null) return null;
+
+                return refreshToken;
+            }
+        }
+        return null;
     }
 }
