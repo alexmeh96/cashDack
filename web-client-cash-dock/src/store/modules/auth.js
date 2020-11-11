@@ -1,11 +1,12 @@
 import axios from "axios";
+import user from "@/store/modules/user";
 
 const API_URL = 'http://localhost:8080/auth/';
-const user = JSON.parse(localStorage.getItem('user'));
 
 export default {
   state: {
-    user,
+    user: null,
+    token: null,
     loggedIn: false
   },
   getters: {
@@ -15,21 +16,18 @@ export default {
     getLoggedIn(state) {
       return state.loggedIn
     },
-    getRole(state) {
-      return state.user.roles
-    }
+    getUser: s => s.user,
+    getToken: s => s.token,
   },
   actions: {
     async loginAct(ctx, {email, password}) {
       try {
-        const user = (await axios.post(API_URL + 'signin', {
+        const data = (await axios.post(API_URL + 'signin',  {
           email,
           password
-        })).data
-        if (user.token) {
-          localStorage.setItem('user', JSON.stringify(user));
-        }
-        ctx.commit('loginMut', user)
+        }, { withCredentials: true })).data
+
+        ctx.commit('loginMut', data)
 
       } catch (e) {
         console.log(e.response.data)
@@ -47,22 +45,33 @@ export default {
         ctx.commit('setError', e.response.data.message)
         throw e
       }
+    },
+    async refreshTokenAct(ctx) {
+      try {
+        const data = (await axios.get(API_URL + 'refresh', { withCredentials: true })).data
+        ctx.commit('loginMut', data)
+        return Promise.resolve()
+      } catch (e) {
+        return Promise.reject()
+      }
 
     },
     logoutAct(ctx) {
-      localStorage.removeItem('user')
       ctx.commit("logoutMut")
     }
 
   },
   mutations: {
-    loginMut(state, user) {
-      state.user = user
+    loginMut(state, data) {
+      state.user = data.user
+      state.token = data.token
       state.loggedIn = true
+      console.log(data)
     },
     logoutMut(state) {
       state.loggedIn = false;
       state.user = null;
+      state.token = null;
     }
 
   }

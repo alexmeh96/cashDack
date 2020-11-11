@@ -22,6 +22,7 @@
 <script>
 import Navbar from '@/components/app/Navbar'
 import Sidebar from '@/components/app/Sidebar'
+import messages from "@/utils/messages";
 
 export default {
   name: 'main-layout',
@@ -31,6 +32,18 @@ export default {
   components: {
     Navbar, Sidebar
   },
+  computed: {
+    error() {
+      return this.$store.getters.error
+    }
+  },
+  watch: {
+    error(backError) {
+      console.log(backError)
+      this.$error(messages[backError] || '.что-то пошло не так')
+    }
+  }
+
   // computed: {
   //   currentUser() {
   //     return this.$store.state.auth.user;

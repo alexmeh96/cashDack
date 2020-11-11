@@ -1,9 +1,10 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import store from '@/store'
 
 Vue.use(Router)
 
-export default new Router({
+const router =  new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
@@ -52,7 +53,7 @@ export default new Router({
     {
       path: '/profile',
       name: 'profile',
-      meta: {layout: 'Main'},
+      meta: {layout: 'Main', auth: true},
       component: () => import('./views/Profile.vue')
     },
     {
@@ -63,3 +64,20 @@ export default new Router({
     }
   ]
 })
+
+router.beforeEach((to, from, next) => {
+  const user = store.getters.getUser
+  const auth = to.matched.some(record => record.meta.auth)
+
+
+  if (auth && !user) {
+    store.dispatch("refreshTokenAct").then(
+      () => next(),
+      () => next('/login?message=login')
+    )
+  }else {
+    next()
+  }
+})
+
+export default router
