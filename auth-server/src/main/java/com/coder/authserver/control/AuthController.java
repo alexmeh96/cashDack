@@ -1,6 +1,7 @@
 package com.coder.authserver.control;
 
 import com.coder.authserver.dto.Token;
+import com.coder.authserver.dto.UserDto;
 import com.coder.authserver.model.ERole;
 import com.coder.authserver.model.Role;
 import com.coder.authserver.model.User;
@@ -13,6 +14,7 @@ import com.coder.authserver.util.CookieUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,7 +23,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,9 +54,9 @@ public class AuthController {
         this.cookieUtil = cookieUtil;
     }
 
-
+    @CrossOrigin(origins = "http://localhost:8081", maxAge = 3600, allowCredentials = "true")
     @PostMapping("/signin")
-    public ResponseEntity<?> loginUser(@Valid @RequestBody LoginUser loginUser) {
+    public ResponseEntity<?> loginUser(@Valid @RequestBody LoginUser loginUser, HttpServletResponse response) {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginUser.getEmail(), loginUser.getPassword()));
@@ -66,17 +70,24 @@ public class AuthController {
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.createTokenCookie(refreshToken).toString());
+   //     response.addCookie(cookieUtil.createTokenCookie2(refreshToken));
+
+        User user = userRepository.findByEmail(userDetails.getEmail()).orElseThrow();
+        user.setTokenRefresh(refreshToken.getTokenValue());
+        userRepository.save(user);
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok().headers(responseHeaders).body(new LoginResponse(
-                accessToken,
-                userDetails.getId(),
-                userDetails.getUsername(),
-                userDetails.getEmail(),
-                roles)
+                        accessToken,
+                        new UserDto(
+                                user.getId(),
+                                user.getUsername(),
+                                user.getEmail(),
+                                roles)
+                )
         );
     }
 
@@ -134,19 +145,45 @@ public class AuthController {
 
         return ResponseEntity.ok(new RegisterResponse("User registered successfully!"));
     }
-
+    @CrossOrigin(origins = "http://localhost:8081", maxAge = 3600, allowCredentials = "true")
     @GetMapping(value = "/refresh")
-    public ResponseEntity<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
 
         String currentUserEmail = jwtUtils.getUserNameFromRefreshToken(refreshToken);
 
         Token newAccessToken = jwtUtils.generateAccessToken(currentUserEmail);
         Token newRefreshToken = jwtUtils.generateRefreshToken(currentUserEmail);
 
+        User user = userRepository.findByEmail(currentUserEmail).get();
+        user.setTokenRefresh(newRefreshToken.getTokenValue());
+        userRepository.save(user);
+
+      //  response.addCookie(cookieUtil.createTokenCookie2(newRefreshToken));
+
+
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.createTokenCookie(newRefreshToken).toString());
 
-        return ResponseEntity.ok().headers(responseHeaders).body(newAccessToken);
+        return ResponseEntity.ok().headers(responseHeaders).body(new LoginResponse(
+                newAccessToken,
+                        new UserDto(
+                                user.getId(),
+                                user.getUsername(),
+                                user.getEmail(),
+                                user.getRoles().stream().map(role -> role.getName().name()).collect(Collectors.toList())
+                        )
+                )
+
+        );
+    }
+
+    @GetMapping(value = "/logout")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> logout(Principal principal) {
+        User user = userRepository.findByEmail(principal.getName()).get();
+        user.setTokenRefresh("");
+        userRepository.save(user);
+        return ResponseEntity.ok().body("logout is success!");
     }
 
 }

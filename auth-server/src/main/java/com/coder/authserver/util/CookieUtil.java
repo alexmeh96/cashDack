@@ -6,6 +6,8 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.Cookie;
+
 @Component
 public class CookieUtil {
 
@@ -15,5 +17,14 @@ public class CookieUtil {
                 .httpOnly(true)
                 .path("/")
                 .build();
+    }
+
+    public Cookie createTokenCookie2(Token token) {
+        Cookie cookie = new Cookie(token.getTokenName(), token.getTokenValue());
+        cookie.setMaxAge(token.getDuration().intValue());
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        return cookie;
+
     }
 }

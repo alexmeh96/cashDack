@@ -1,5 +1,6 @@
 package com.coder.authserver.security;
 
+import com.coder.authserver.repo.UserRepository;
 import com.coder.authserver.service.UserDetailsServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -18,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+
 @Component
 public class AuthTokenFilter extends OncePerRequestFilter {
 
@@ -25,12 +28,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     private JwtUtils jwtUtils;
 
+    private UserRepository userRepository;
+
     private UserDetailsServiceImpl userDetailsService;
 
     @Autowired
-    public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService) {
+    public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService, UserRepository userRepository) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
     }
 
     public AuthTokenFilter() {
@@ -43,16 +49,26 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
             if (httpServletRequest.getRequestURI().equals("/auth/refresh")) {
                 String refreshToken = jwtUtils.getRefreshTokenFromCookie(httpServletRequest);
+                System.out.println(refreshToken);
+            //    String refreshToken = parseAccessToken(httpServletRequest);
 
                 if (refreshToken != null && jwtUtils.validateRefreshToken(refreshToken)) {
                     String email = jwtUtils.getUserNameFromRefreshToken(refreshToken);
 
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+                    //сравниваем с бд
+                    String tokenRefreshDb = userRepository.findByEmail(email)
+                            .orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email)).getTokenRefresh();
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    if (tokenRefreshDb != null && tokenRefreshDb.equals(refreshToken)) {
+
+
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
 
             } else {
