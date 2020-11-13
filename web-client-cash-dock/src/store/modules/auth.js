@@ -1,5 +1,5 @@
 import axios from "axios";
-import user from "@/store/modules/user";
+import authHeader from "@/utils/header";
 
 const API_URL = 'http://localhost:8080/auth/';
 
@@ -56,7 +56,11 @@ export default {
       }
 
     },
-    logoutAct(ctx) {
+    async logoutAct(ctx) {
+      const header = await authHeader()
+      console.log(header)
+      const data = await axios.get(API_URL + 'logout', { headers: header })
+      console.log(data)
       ctx.commit("logoutMut")
     }
 

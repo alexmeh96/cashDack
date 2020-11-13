@@ -1,7 +1,6 @@
-package com.coder.authserver.security;
+package com.coder.resourceserver.service;
 
-import com.coder.authserver.repo.UserRepository;
-import com.coder.authserver.service.UserDetailsServiceImpl;
+import com.coder.resourceserver.repo.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,31 +45,19 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
         try {
+            String accessToken = parseAccessToken(httpServletRequest);
 
-            if (httpServletRequest.getRequestURI().equals("/auth/refresh")) {
-                String refreshToken = jwtUtils.getRefreshTokenFromCookie(httpServletRequest);
-                System.out.println(refreshToken);
+            if (accessToken != null && jwtUtils.validateAccessToken(accessToken)) {
+                String email = jwtUtils.getUserNameFromAccessToken(accessToken);
 
-                if (refreshToken != null && jwtUtils.validateRefreshToken(refreshToken)) {
-                    String email = jwtUtils.getUserNameFromRefreshToken(refreshToken);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
 
-                    //сравниваем с бд
-                    String tokenRefreshDb = userRepository.findByEmail(email)
-                            .orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email)).getTokenRefresh();
-
-                    if (tokenRefreshDb != null && tokenRefreshDb.equals(refreshToken)) {
-
-
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
-                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
-
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                    }
-                }
-
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+
         } catch (Exception e) {
             logger.error("Cannot set user authentication: {}", e);
         }
@@ -78,5 +65,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 
+    private String parseAccessToken(HttpServletRequest request) {
+        String headerAuth = request.getHeader("Authorization");
 
+        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
+            return headerAuth.substring(7, headerAuth.length());
+        }
+
+        return null;
+    }
 }

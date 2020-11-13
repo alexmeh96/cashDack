@@ -1,4 +1,4 @@
-package com.coder.authserver.control;
+package com.coder.resourceserver.controller;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;

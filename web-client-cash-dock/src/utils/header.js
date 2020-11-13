@@ -1,9 +1,25 @@
+import store from '@/store'
 
-export default function authHeader() {
+async function authHeader() {
 
-  if (user && user.token) {
-    return {Authorization: 'Bearer ' + user.token};
-  } else {
-    return {};
+  const token = store.getters.getToken;
+  if (token) {
+    const now = new Date().getTime()
+    if (token.duration - now < 5000) {
+
+      try {
+        await store.dispatch("refreshTokenAct")
+        return {Authorization: 'Bearer ' + store.getters.getToken};
+      } catch (e) {
+        return {}
+      }
+
+    }
+    return {Authorization: 'Bearer ' + token.tokenValue};
   }
+
+  return {};
+
 }
+
+export default authHeader

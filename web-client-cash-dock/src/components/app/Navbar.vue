@@ -51,8 +51,8 @@ export default {
   computed: mapGetters(["getUsername"]),
   methods: {
     ... mapActions(["logoutAct"]),
-    logout() {
-      this.logoutAct();
+    async logout() {
+      await this.logoutAct();
       this.$router.push('/login?message=logout');
     }
   },
