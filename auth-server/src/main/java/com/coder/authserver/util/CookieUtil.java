@@ -1,12 +1,10 @@
 package com.coder.authserver.util;
 
-import com.coder.authserver.dto.Token;
-import org.springframework.beans.factory.annotation.Value;
+import com.coder.authserver.model.Token;
 import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
-
-import javax.servlet.http.Cookie;
 
 @Component
 public class CookieUtil {
@@ -19,12 +17,9 @@ public class CookieUtil {
                 .build();
     }
 
-    public Cookie createTokenCookie2(Token token) {
-        Cookie cookie = new Cookie(token.getTokenName(), token.getTokenValue());
-        cookie.setMaxAge(token.getDuration().intValue());
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        return cookie;
-
+    public HttpHeaders createTokenCookieHeader(Token refreshToken) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.SET_COOKIE, createTokenCookie(refreshToken).toString());
+        return responseHeaders;
     }
 }

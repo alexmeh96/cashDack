@@ -29,7 +29,7 @@ const router =  new Router({
     {
       path: '/categories',
       name: 'categories',
-      meta: {layout: 'Main'},
+      meta: {layout: 'Main', auth: true},
       component: () => import('./views/Categories.vue')
     },
     {

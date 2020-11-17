@@ -1,6 +1,6 @@
 package com.coder.resourceserver.service;
 
-import com.coder.resourceserver.model.User;
+import com.coder.resourceserver.dao.User;
 import com.coder.resourceserver.repo.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

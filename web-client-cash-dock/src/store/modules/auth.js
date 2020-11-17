@@ -10,9 +10,6 @@ export default {
     loggedIn: false
   },
   getters: {
-    getUsername(state) {
-      return state.user ? state.user.username : ""
-    },
     getLoggedIn(state) {
       return state.loggedIn
     },
@@ -22,10 +19,10 @@ export default {
   actions: {
     async loginAct(ctx, {email, password}) {
       try {
-        const data = (await axios.post(API_URL + 'signin',  {
+        const data = (await axios.post(API_URL + 'signin', {
           email,
           password
-        }, { withCredentials: true })).data
+        }, {withCredentials: true})).data
 
         ctx.commit('loginMut', data)
 
@@ -48,7 +45,7 @@ export default {
     },
     async refreshTokenAct(ctx) {
       try {
-        const data = (await axios.get(API_URL + 'refresh', { withCredentials: true })).data
+        const data = (await axios.get(API_URL + 'refresh', {withCredentials: true})).data
         ctx.commit('loginMut', data)
         return Promise.resolve()
       } catch (e) {
@@ -59,7 +56,7 @@ export default {
     async logoutAct(ctx) {
       const header = await authHeader()
       console.log(header)
-      const data = await axios.get(API_URL + 'logout', { headers: header })
+      const data = await axios.get(API_URL + 'logout', {headers: header})
       console.log(data)
       ctx.commit("logoutMut")
     }
@@ -67,8 +64,16 @@ export default {
   },
   mutations: {
     loginMut(state, data) {
-      state.user = data.user
-      state.token = data.token
+      state.user = {
+        username: data.username,
+        email: data.email
+      }
+
+      state.token = {
+        tokenValue: data.tokenValue,
+        duration: data.duration
+      }
+
       state.loggedIn = true
       console.log(data)
     },

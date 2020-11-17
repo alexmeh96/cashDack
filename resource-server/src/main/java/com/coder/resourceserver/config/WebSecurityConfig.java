@@ -1,9 +1,7 @@
 package com.coder.resourceserver.config;
 
-
-
-import com.coder.resourceserver.service.AuthEntryPointJwt;
-import com.coder.resourceserver.service.AuthTokenFilter;
+import com.coder.resourceserver.util.AuthEntryPointJwt;
+import com.coder.resourceserver.util.AuthTokenFilter;
 import com.coder.resourceserver.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -66,8 +64,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements W
         http.cors().and().csrf().disable()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeRequests().antMatchers("/auth/signin", "/auth/signup").permitAll()
-                .antMatchers("/content/**").permitAll()
+                .authorizeRequests().antMatchers("/content/**").permitAll()
                 .anyRequest().authenticated();
 
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);

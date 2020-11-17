@@ -38,17 +38,16 @@ export default {
     HomeCurrency
   },
   async mounted() {
-    this.currency = await this.$store.dispatch('currencyAct')
-    console.log(this.currency)
+    this.currency = await this.$store.dispatch('fetchCurrency')
     this.loading = false
-    this.date = new Date()
+    this.date = this.currency.date
   },
   methods: {
     async refresh() {
       this.loading = true
-      this.currency = await this.$store.dispatch('currencyAct')
+      this.currency = await this.$store.dispatch('fetchCurrency')
       this.loading = false
-      this.date = new Date()
+      this.date = this.currency.date
     }
   }
 

@@ -1,7 +1,7 @@
 package com.coder.authserver.service;
 
 
-import com.coder.authserver.model.User;
+import com.coder.authserver.dao.User;
 import com.coder.authserver.repo.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

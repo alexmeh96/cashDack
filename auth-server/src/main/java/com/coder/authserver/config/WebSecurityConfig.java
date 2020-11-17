@@ -1,8 +1,8 @@
 package com.coder.authserver.config;
 
 
-import com.coder.authserver.security.AuthEntryPointJwt;
-import com.coder.authserver.security.AuthTokenFilter;
+import com.coder.authserver.util.security.AuthEntryPointJwt;
+import com.coder.authserver.util.security.AuthTokenFilter;
 import com.coder.authserver.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
