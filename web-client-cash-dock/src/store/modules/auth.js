@@ -27,7 +27,6 @@ export default {
         ctx.commit('loginMut', data)
 
       } catch (e) {
-        console.log(e.response.data)
         ctx.commit('setError', e.response.data.message)
         throw e
       }
@@ -35,10 +34,8 @@ export default {
     async registerAct(ctx, formData) {
       try {
         const data = (await axios.post(API_URL + 'signup', formData)).data
-        console.log(data.message)
         ctx.commit('setMessage', data.message)
       } catch (e) {
-        console.log(e.response.data.message)
         ctx.commit('setError', e.response.data.message)
         throw e
       }
@@ -55,10 +52,9 @@ export default {
     },
     async logoutAct(ctx) {
       const header = await authHeader()
-      console.log(header)
-      const data = await axios.get(API_URL + 'logout', {headers: header})
-      console.log(data)
+      await axios.get(API_URL + 'logout', {headers: header})
       ctx.commit("logoutMut")
+      ctx.commit("clearInfo")
     }
 
   },
@@ -68,18 +64,15 @@ export default {
         username: data.username,
         email: data.email
       }
-
       state.token = {
         tokenValue: data.tokenValue,
         duration: data.duration
       }
-
       state.loggedIn = true
-      console.log(data)
     },
     logoutMut(state) {
       state.loggedIn = false;
-      state.user = null;
+      state.user = {}
       state.token = null;
     }
 

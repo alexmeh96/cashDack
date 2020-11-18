@@ -16,7 +16,7 @@
               data-target="dropdown"
               ref="dropdown"
           >
-            {{ getUsername }}
+            {{ name }}
             <i class="material-icons right">arrow_drop_down</i>
           </a>
 
@@ -48,7 +48,11 @@ export default {
     interval: null,
     dropdown: null,
   }),
-  computed: mapGetters(["getUsername"]),
+  computed: {
+    name() {
+      return this.$store.getters.getUser.username
+    }
+  },
   methods: {
     ... mapActions(["logoutAct"]),
     async logout() {

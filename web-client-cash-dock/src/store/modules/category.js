@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:8082/category/';
 
 export default {
   actions: {
-    async fetchCategories() {
+    async fetchCategories(ctx) {
       try {
 
         await new Promise(resolve => setTimeout(resolve, 1000));

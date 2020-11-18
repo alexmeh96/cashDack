@@ -1,20 +1,22 @@
 <template>
-  <div class="app-main-layout">
+  <div>
+    <Loader v-if="loading" />
+    <div class="app-main-layout" v-else>
+      <Navbar @click="isOpen = !isOpen"/>
 
-    <Navbar @click="isOpen = !isOpen" />
+      <Sidebar v-model="isOpen"/>
 
-    <Sidebar v-model="isOpen" />
+      <main class="app-content" :class="{full: !isOpen}">
+        <div class="app-page">
+          <router-view/>
+        </div>
+      </main>
 
-    <main class="app-content" :class="{full: !isOpen}">
-      <div class="app-page">
-        <router-view />
+      <div class="fixed-action-btn">
+        <router-link class="btn-floating btn-large blue" to="/record">
+          <i class="large material-icons">add</i>
+        </router-link>
       </div>
-    </main>
-
-    <div class="fixed-action-btn">
-      <router-link class="btn-floating btn-large blue" to="/record">
-        <i class="large material-icons">add</i>
-      </router-link>
     </div>
   </div>
 </template>
@@ -27,7 +29,8 @@ import messages from "@/utils/messages";
 export default {
   name: 'main-layout',
   data: () => ({
-    isOpen: true
+    isOpen: true,
+    loading: true
   }),
   components: {
     Navbar, Sidebar
@@ -42,17 +45,14 @@ export default {
       console.log(backError)
       this.$error(messages[backError] || '.что-то пошло не так')
     }
-  }
+  },
+  async mounted() {
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-  // computed: {
-  //   currentUser() {
-  //     return this.$store.state.auth.user;
-  //   }
-  // },
-  // mounted() {
-  //   if (!this.currentUser) {
-  //     this.$router.push('/login');
-  //   }
-  // }
+    if (!this.$store.getters.getInfo) {
+      await this.$store.dispatch("fetchInfo")
+    }
+    this.loading = false
+  }
 }
 </script>

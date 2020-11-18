@@ -24,10 +24,10 @@
 </template>
 
 <script>
-import {mapActions, mapGetters} from 'vuex'
+import {mapGetters} from 'vuex'
 export default {
   name: 'Profile',
-  computed: mapGetters(['getLoggedIn', 'getUsername', 'getContent']),
+  computed: mapGetters(['getLoggedIn']),
   created() {
     if (!this.getLoggedIn) {
       this.$router.push('/login')
@@ -37,17 +37,6 @@ export default {
     }
 
   },
-  methods: {
-    ...mapActions(["userContentAct"]),
-  },
 
-  async mounted() {
-    try {
-      await this.userContentAct()
-    } catch (e) {
-      console.log('no content!')
-    }
-
-  }
 };
 </script>

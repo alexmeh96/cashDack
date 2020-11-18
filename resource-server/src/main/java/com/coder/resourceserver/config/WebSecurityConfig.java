@@ -3,6 +3,8 @@ package com.coder.resourceserver.config;
 import com.coder.resourceserver.util.AuthEntryPointJwt;
 import com.coder.resourceserver.util.AuthTokenFilter;
 import com.coder.resourceserver.service.UserDetailsServiceImpl;
+import com.coder.resourceserver.util.NullAwareBeanUtilsBean;
+import org.apache.commons.beanutils.BeanUtilsBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +44,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements W
 //    public AuthTokenFilter authenticationJwtTokenFilter() {
 //        return new AuthTokenFilter();
 //    }
+    @Bean
+    public BeanUtilsBean copyNotNullBean() {
+        return new NullAwareBeanUtilsBean();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

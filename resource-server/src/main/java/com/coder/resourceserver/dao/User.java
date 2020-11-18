@@ -14,11 +14,7 @@ import java.util.Set;
 
 @Data
 @Entity
-@Table(	name = "users",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "username"),
-                @UniqueConstraint(columnNames = "email")
-        })
+@Table(	name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,22 +33,21 @@ public class User {
     @Size(max = 120)
     private String password;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "info_id")
+    private Info info;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(	name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-//    @OneToOne(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "category_id", referencedColumnName = "id")
-//    private Category category;
-
-//    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
-//    @OneToMany( cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private Set<Category> categories = new HashSet<>();
-
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
     private List<Category> categories;
+
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    private List<Record> records;
 
     public User() {
     }

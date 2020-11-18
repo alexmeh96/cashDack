@@ -23,7 +23,7 @@ const router =  new Router({
     {
       path: '/',
       name: 'home',
-      meta: {layout: 'Main'},
+      meta: {layout: 'Main', auth: true},
       component: () => import('./views/Home.vue')
     },
     {
@@ -35,19 +35,19 @@ const router =  new Router({
     {
       path: '/detail/:id',
       name: 'detail',
-      meta: {layout: 'Main'},
+      meta: {layout: 'Main', auth: true},
       component: () => import('./views/Detail.vue')
     },
     {
       path: '/history',
       name: 'history',
-      meta: {layout: 'Main'},
+      meta: {layout: 'Main', auth: true},
       component: () => import('./views/History.vue')
     },
     {
       path: '/planning',
       name: 'planning',
-      meta: {layout: 'Main'},
+      meta: {layout: 'Main', auth: true},
       component: () => import('./views/Planning.vue')
     },
     {
@@ -59,7 +59,7 @@ const router =  new Router({
     {
       path: '/record',
       name: 'record',
-      meta: {layout: 'Main'},
+      meta: {layout: 'Main', auth: true},
       component: () => import('./views/Record.vue')
     }
   ]
