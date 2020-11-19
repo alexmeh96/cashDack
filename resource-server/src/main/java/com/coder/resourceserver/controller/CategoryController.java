@@ -26,6 +26,11 @@ public class CategoryController {
         return categoryService.allCategories(user);
     }
 
+    @GetMapping("/{id}")
+    public Category getCategory(@PathVariable Long id) {
+        return categoryService.findCategory(id);
+    }
+
     @PostMapping("/add")
     public Category addCategory(@RequestBody Category category, Principal principal) {
         User user = categoryService.findUser(principal.getName());

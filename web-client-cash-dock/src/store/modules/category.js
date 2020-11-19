@@ -12,9 +12,17 @@ export default {
 
         const header = await authHeader()
         const data = (await axios.get(API_URL, {headers: header})).data
+        return data
+      } catch (e) {
+        ctx.commit('setError', e)
+        throw e
+      }
 
-        console.log(data)
-
+    },
+    async fetchCategoryById(ctx, id) {
+      try {
+        const header = await authHeader()
+        const data = (await axios.get(API_URL + id, {headers: header})).data
         return data
       } catch (e) {
         ctx.commit('setError', e)
@@ -27,8 +35,6 @@ export default {
         const header = await authHeader()
         const data = (await axios.post(API_URL + "edit", category,{headers: header})).data
         await new Promise(resolve => setTimeout(resolve, 1000));
-
-        console.log(data)
       } catch (e) {
         ctx.commit('setError', e)
         throw e

@@ -66,11 +66,11 @@ const router =  new Router({
 })
 
 router.beforeEach((to, from, next) => {
-  const user = store.getters.getUser
+  const loggedIn = store.getters.getLoggedIn
   const auth = to.matched.some(record => record.meta.auth)
 
 
-  if (auth && !user) {
+  if (auth && !loggedIn) {
     store.dispatch("refreshTokenAct").then(
       () => next(),
       () => next('/login?message=login')

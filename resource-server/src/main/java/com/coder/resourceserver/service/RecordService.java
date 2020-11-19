@@ -7,6 +7,8 @@ import com.coder.resourceserver.repo.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class RecordService {
 
@@ -20,5 +22,14 @@ public class RecordService {
         user.getRecords().add(record);
         record.setAuthor(user);
         recordRepository.save(record);
+    }
+
+    public List<Record> allRecords(String email) {
+        User user = userRepository.findByEmail(email).get();
+        return user.getRecords();
+    }
+
+    public Record findRecord(Long id) {
+        return recordRepository.findById(id).get();
     }
 }

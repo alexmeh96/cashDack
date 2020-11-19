@@ -9,6 +9,7 @@ import messagePlugin from '@/utils/message.plugin'
 import Loader from "@/components/app/Loader";
 import './registerServiceWorker'
 import 'materialize-css/dist/js/materialize.min'
+import tooltipDirective from "@/directives/tooltip.directive"
 
 Vue.config.productionTip = false
 
@@ -17,6 +18,7 @@ Vue.use(Vuelidate)
 Vue.filter('date', dateFilter)
 Vue.filter('currency', currencyFilter)
 Vue.component('Loader', Loader)
+Vue.directive('tooltip', tooltipDirective)
 
 new Vue({
   router,

@@ -1,5 +1,6 @@
 package com.coder.resourceserver.dao;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -23,5 +24,6 @@ public class Record {
 
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User author;
 }

@@ -13,7 +13,7 @@
       </main>
 
       <div class="fixed-action-btn">
-        <router-link class="btn-floating btn-large blue" to="/record">
+        <router-link class="btn-floating btn-large blue" to="/record" v-tooltip="'Создать новую запись'">
           <i class="large material-icons">add</i>
         </router-link>
       </div>
@@ -49,7 +49,8 @@ export default {
   async mounted() {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (!this.$store.getters.getInfo) {
+    if (!Object.keys(this.$store.getters.getInfo).length) {
+      console.log("!!!!!!!!!!!!!!!!!!1")
       await this.$store.dispatch("fetchInfo")
     }
     this.loading = false
