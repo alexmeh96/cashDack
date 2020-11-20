@@ -5,15 +5,13 @@ const API_URL = 'http://localhost:8080/auth/';
 
 export default {
   state: {
-    user: null,
-    token: null,
+    token: {},
     loggedIn: false
   },
   getters: {
     getLoggedIn(state) {
       return state.loggedIn
     },
-    getUser: s => s.user,
     getToken: s => s.token,
   },
   actions: {
@@ -60,10 +58,6 @@ export default {
   },
   mutations: {
     loginMut(state, data) {
-      state.user = {
-        username: data.username,
-        email: data.email
-      }
       state.token = {
         tokenValue: data.tokenValue,
         duration: data.duration
@@ -72,8 +66,7 @@ export default {
     },
     logoutMut(state) {
       state.loggedIn = false;
-      state.user = {}
-      state.token = null;
+      state.token = {};
     }
 
   }

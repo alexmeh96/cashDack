@@ -1,4 +1,4 @@
-package com.coder.resourceserver.dao;
+package com.coder.authserver.dao;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -16,7 +16,6 @@ public class Info {
 
     private Long bill;
     private String username;
-    private String locale;
 
     @OneToOne(mappedBy = "info", cascade = CascadeType.ALL)
     @JsonIgnore

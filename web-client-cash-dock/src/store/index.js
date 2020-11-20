@@ -24,8 +24,6 @@ export default new Vuex.Store({
 
       const data = (await axios.get(API_URL + 'currency')).data
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       return data;
     }
   }

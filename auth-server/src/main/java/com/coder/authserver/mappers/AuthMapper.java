@@ -8,7 +8,6 @@ public class AuthMapper {
     public static LoginResponseDTO toLoginResponseDTO(User user, Token token) {
         return new LoginResponseDTO(token.getTokenValue(),
                 token.getDuration(),
-                user.getUsername(),
                 user.getEmail()
         );
     }

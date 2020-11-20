@@ -33,9 +33,7 @@ public class AuthService {
     public Boolean userExistEmail(String email) {
         return userRepository.existsByEmail(email);
     }
-    public Boolean userExistUsername(String username) {
-        return userRepository.existsByUsername(username);
-    }
+
 
     public Role findRole(ERole name) {
         return roleRepository.findByName(name).orElseThrow(() -> new RuntimeException("Error: Role is not found."));

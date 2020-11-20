@@ -17,7 +17,6 @@ export default {
       try {
         const header = await authHeader()
         const data = (await axios.get(API_URL, {headers: header})).data
-        console.log(data)
         return data
       } catch (e) {
         ctx.commit('setError', e)
@@ -28,7 +27,6 @@ export default {
       try {
         const header = await authHeader()
         const data = (await axios.get(API_URL + id, {headers: header})).data
-        console.log(data)
         return data
       } catch (e) {
         ctx.commit('setError', e)

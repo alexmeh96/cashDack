@@ -41,7 +41,7 @@
 
 
 <script>
-import {mapGetters, mapActions} from 'vuex'
+import { mapActions} from 'vuex'
 export default {
   data: () => ({
     date: new Date(),
@@ -50,7 +50,7 @@ export default {
   }),
   computed: {
     name() {
-      return this.$store.getters.getUser.username
+      return this.$store.getters.getInfo.username
     }
   },
   methods: {

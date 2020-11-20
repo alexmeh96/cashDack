@@ -1,5 +1,6 @@
 package com.coder.authserver.control;
 
+import com.coder.authserver.dao.Info;
 import com.coder.authserver.dto.LoginRequestDTO;
 import com.coder.authserver.dto.LoginResponseDTO;
 import com.coder.authserver.dto.RegisterRequestDTO;
@@ -81,11 +82,6 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
-        if (authService.userExistUsername(registerRequestDTO.getUsername())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new RegisterResponseDTO("Error: Username is already taken!"));
-        }
 
         if (authService.userExistEmail(registerRequestDTO.getEmail())) {
             return ResponseEntity
@@ -94,9 +90,12 @@ public class AuthController {
         }
 
         // Create new user's account
-        User user = new User(registerRequestDTO.getUsername(),
-                registerRequestDTO.getEmail(),
+        User user = new User(registerRequestDTO.getEmail(),
                 passwordEncoder.encode(registerRequestDTO.getPassword()));
+        Info info = new Info();
+        info.setBill(10000l);
+        info.setUsername(registerRequestDTO.getUsername());
+        user.setInfo(info);
 
         //get role from registerRequest
         Set<String> strRoles = null;

@@ -20,10 +20,6 @@ public class User {
     private Long id;
 
     @NotBlank
-    @Size(max = 20)
-    private String username;
-
-    @NotBlank
     @Size(max = 50)
     @Email
     private String email;
@@ -35,6 +31,10 @@ public class User {
     @Size(max = 120)
     private String tokenRefresh;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "info_id")
+    private Info info;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(	name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -44,8 +44,7 @@ public class User {
     public User() {
     }
 
-    public User(String username, String email, String password) {
-        this.username = username;
+    public User(String email, String password) {
         this.email = email;
         this.password = password;
     }
