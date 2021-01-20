@@ -1,4 +1,4 @@
-# cashDack
+# cashDock
 
 An app that helps you keep track of your finances
 
